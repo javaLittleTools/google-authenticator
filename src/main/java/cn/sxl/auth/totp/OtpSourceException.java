@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.sxl.auth.otp;
+package cn.sxl.auth.totp;
 
 /**
  * Indicates that {@link OtpSource} failed to performed the requested operation.

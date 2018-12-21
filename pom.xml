@@ -43,7 +43,7 @@
         <dependency>
             <groupId>cn.sxl</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.0</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>

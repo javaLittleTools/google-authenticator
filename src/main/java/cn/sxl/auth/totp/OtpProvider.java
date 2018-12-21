@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.sxl.auth.otp;
+package cn.sxl.auth.totp;
 
 import cn.sxl.auth.service.UserService;
 import cn.sxl.auth.util.Utilities;

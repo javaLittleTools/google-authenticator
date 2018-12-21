@@ -1,18 +1,21 @@
 package cn.sxl.auth.controller;
 
+import cn.sxl.auth.entity.User;
+import cn.sxl.auth.repository.UserRepository;
+import cn.sxl.auth.service.UserService;
 import cn.sxl.utils.otp.OtpUtils;
-import cn.sxl.utils.qrcode.QrCodeArgs;
 import cn.sxl.utils.qrcode.QrCodeUtils;
+import com.google.common.collect.Maps;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,42 +28,56 @@ import java.util.Map;
 @RestController
 public class WebController {
 
+    private final UserRepository userRepository;
+
+    private final UserService userService;
+
     private String secretKey;
 
-    @GetMapping("/qrcode")
-    public void generateQRCode(HttpServletResponse response) {
+    @Autowired
+    public WebController(UserRepository userRepository, UserService userService) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+    }
 
-        Map<EncodeHintType, Object> hints = new HashMap<>();
+    @GetMapping("/qrcode/{email}")
+    public void generateQRCode(HttpServletResponse response, @PathVariable String email) {
+        secretKey = getSecretKey();
+
+        TotpController totpController = new TotpController(this.userService, this.userRepository);
+        totpController.addUser(email, secretKey);
+
+        Map<EncodeHintType, Object> hints = Maps.newHashMap();
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
         hints.put(EncodeHintType.MARGIN, 0);
 
-        QrCodeArgs qrCodeArgs = new QrCodeArgs();
-        qrCodeArgs.setWidth(200);
-        qrCodeArgs.setHeight(200);
-        qrCodeArgs.setHints(hints);
-
         try {
-            BitMatrix bitMatrix = QrCodeUtils.generateQRCode(qrCodeContent(), response, qrCodeArgs);
+            BitMatrix bitMatrix = QrCodeUtils.generateQRCode(OtpUtils.getQRBarcode(email, secretKey), response, 300, 300, hints);
             MatrixToImageWriter.writeToStream(bitMatrix, "png", response.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @GetMapping("/verify/{code}")
-    public boolean verifyCode(@PathVariable("code") Long code) {
+    @GetMapping("/verify/{email}/{code}")
+    public String verifyCode(@PathVariable String email, @PathVariable Long code) {
         long t = System.currentTimeMillis();
-        OtpUtils ga = new OtpUtils();
-        ga.setWindowSize(5);
+        OtpUtils otpUtils = new OtpUtils();
+        otpUtils.setWindowSize(5);
+
         System.out.println("code:" + code);
         System.out.println("secretKey:" + secretKey);
-        return ga.check_code(secretKey, code, t);
+
+        if ("".equals(secretKey) || secretKey == null) {
+            User user = userRepository.findByEmail(email);
+            secretKey = user.getSecret();
+        }
+
+        return otpUtils.check_code(secretKey, code, t) ? "<h1>Success</h1>" : "<h1>Failed</h1>";
     }
 
-    private String qrCodeContent() {
-        secretKey = OtpUtils.generateSecretKey();
-        System.out.println("secret:" + secretKey);
-        return OtpUtils.getQRBarcode("tulip_sxl@outlook.com", secretKey);
+    private String getSecretKey() {
+        return OtpUtils.generateSecretKey();
     }
 
 }

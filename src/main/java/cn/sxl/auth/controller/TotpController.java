@@ -1,8 +1,8 @@
 package cn.sxl.auth.controller;
 
 import cn.sxl.auth.entity.User;
-import cn.sxl.auth.otp.OtpProvider;
-import cn.sxl.auth.otp.OtpSourceException;
+import cn.sxl.auth.totp.OtpProvider;
+import cn.sxl.auth.totp.OtpSourceException;
 import cn.sxl.auth.repository.UserRepository;
 import cn.sxl.auth.service.UserService;
 import com.beust.jcommander.internal.Maps;
@@ -18,14 +18,14 @@ import java.util.Map;
  * @since Created on 12/19/2018 6:12 PM.
  */
 @RestController
-public class OtpController {
+public class TotpController {
 
     private final UserService userService;
 
     private final UserRepository userRepository;
 
     @Autowired
-    public OtpController(UserService userService, UserRepository userRepository) {
+    public TotpController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
     }

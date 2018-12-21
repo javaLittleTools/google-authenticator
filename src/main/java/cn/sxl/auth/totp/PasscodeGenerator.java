@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.sxl.auth.otp;
+package cn.sxl.auth.totp;
 
 import cn.sxl.auth.util.Base32String;
 import lombok.extern.log4j.Log4j2;

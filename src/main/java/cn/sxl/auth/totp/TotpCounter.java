@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.sxl.auth.otp;
+package cn.sxl.auth.totp;
 
 /**
  * Counter whose value is a deterministic function of time as described in RFC 6238
