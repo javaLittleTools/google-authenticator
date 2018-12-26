@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String getSecret(String email) {
+    public String getSecretByEmail(String email) {
         User user = userRepository.findByEmail(email);
 
         return user.getSecret();
@@ -47,4 +47,15 @@ public class UserServiceImpl implements UserService {
     public User addUser(User user) {
         return userRepository.save(user);
     }
+
+    @Override
+    public User modifyUser(User user) {
+        return userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }

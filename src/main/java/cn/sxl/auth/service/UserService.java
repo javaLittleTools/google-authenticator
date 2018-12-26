@@ -15,7 +15,12 @@ public interface UserService {
 
     int getNames(Collection<String> result);
 
-    String getSecret(String email);
+    String getSecretByEmail(String email);
 
     User addUser(User user);
+
+    User modifyUser(User user);
+
+    User getUserByEmail(String email);
+
 }

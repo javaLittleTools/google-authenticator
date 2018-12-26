@@ -1,7 +1,6 @@
 package cn.sxl.auth.controller;
 
 import cn.sxl.auth.entity.User;
-import cn.sxl.auth.repository.UserRepository;
 import cn.sxl.auth.service.UserService;
 import cn.sxl.utils.otp.OtpUtils;
 import cn.sxl.utils.qrcode.QrCodeUtils;
@@ -10,7 +9,6 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,26 +25,20 @@ import java.util.Map;
  * Created on 12/12/2018 5:07 PM.
  */
 @RestController
-public class WebController {
-
-    private final UserRepository userRepository;
+public class QrCodeController {
 
     private final UserService userService;
 
-    private String secretKey;
-
     @Autowired
-    public WebController(UserRepository userRepository, UserService userService) {
-        this.userRepository = userRepository;
+    public QrCodeController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping("/qrcode/{email}")
     public void generateQRCode(HttpServletResponse response, @PathVariable String email) {
-        secretKey = getSecretKey();
+        String secretKey = getSecretKey();
 
-        TotpController totpController = new TotpController(this.userService, this.userRepository);
-        totpController.addUser(email, secretKey);
+        addUser(email, secretKey);
 
         Map<EncodeHintType, Object> hints = Maps.newHashMap();
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -60,21 +52,20 @@ public class WebController {
         }
     }
 
-    @GetMapping("/verify/{email}/{code}")
-    public ResponseEntity<String> verifyCode(@PathVariable String email, @PathVariable Long code) {
-        long t = System.currentTimeMillis();
-        OtpUtils otpUtils = new OtpUtils();
-        otpUtils.setWindowSize(5);
+    private void addUser(String email, String secret) {
+        User user = userService.getUserByEmail(email);
 
-        System.out.println("code:" + code);
-        System.out.println("secretKey:" + secretKey);
+        if (user != null) {
+            user.setSecret(secret);
 
-        if ("".equals(secretKey) || secretKey == null) {
-            User user = userRepository.findByEmail(email);
-            secretKey = user.getSecret();
+            userService.modifyUser(user);
+        } else {
+            user = new User();
+            user.setEmail(email);
+            user.setSecret(secret);
+
+            userService.addUser(user);
         }
-
-        return ResponseEntity.ok(otpUtils.check_code(secretKey, code, t) ? "<h1>Success</h1>" : "<h1>Failed</h1>");
     }
 
     private String getSecretKey() {

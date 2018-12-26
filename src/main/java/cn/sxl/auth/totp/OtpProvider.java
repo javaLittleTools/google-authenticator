@@ -36,13 +36,15 @@ public class OtpProvider implements OtpSource {
 
     private final UserService userService;
 
-    // HOTP or TOTP
+    /**
+     * HOTP or TOTP
+     */
     private static final int PIN_LENGTH = 6;
 
     /**
      * Default passcode timeout period (in seconds)
      */
-    public static final int DEFAULT_INTERVAL = 30;
+    static int DEFAULT_INTERVAL = 30;
 
     /**
      * Counter for time-based OTPs (TOTP).
@@ -66,7 +68,7 @@ public class OtpProvider implements OtpSource {
             throw new OtpSourceException("No account name");
         }
 
-        String secret = userService.getSecret(email);
+        String secret = userService.getSecretByEmail(email);
 
         // For time-based OTP, the state is derived from clock.
         long otpState = totpCounter.getValueAtTime(
@@ -92,13 +94,13 @@ public class OtpProvider implements OtpSource {
             throw new OtpSourceException("No account name");
         }
 
-        String secret = userService.getSecret(email);
+        String secret = userService.getSecretByEmail(email);
 
         // For time-based OTP, the state is derived from clock.
-        long otp_state = totpCounter.getValueAtTime(
+        long otpState = totpCounter.getValueAtTime(
                 Utilities.millisToSeconds(System.currentTimeMillis()));
 
-        return computePin(secret, otp_state);
+        return computePin(secret, otpState);
     }
 
     /**
@@ -108,7 +110,7 @@ public class OtpProvider implements OtpSource {
      * @param otpState current token state (counter or time-interval)
      * @return the PIN
      */
-    public String computePin(String secret, long otpState) throws OtpSourceException {
+    private String computePin(String secret, long otpState) throws OtpSourceException {
         if (secret == null || secret.length() == 0) {
             throw new OtpSourceException("Null or empty secret");
         }
@@ -132,12 +134,6 @@ public class OtpProvider implements OtpSource {
      * @return the secret key as base32 encoded string.
      */
     String getSecret(String user) {
-        return userService.getSecret(user);
+        return userService.getSecretByEmail(user);
     }
-
-//    public static void main(String[] args) throws OtpSourceException {
-//        OtpProvider otpProvider = new OtpProvider();
-//        System.out.println(otpProvider.getCurrentCode("sxl"));
-//        System.out.println(otpProvider.getNextCode("sxl"));
-//    }
 }
