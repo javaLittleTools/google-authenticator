@@ -10,6 +10,7 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,7 +61,7 @@ public class WebController {
     }
 
     @GetMapping("/verify/{email}/{code}")
-    public String verifyCode(@PathVariable String email, @PathVariable Long code) {
+    public ResponseEntity<String> verifyCode(@PathVariable String email, @PathVariable Long code) {
         long t = System.currentTimeMillis();
         OtpUtils otpUtils = new OtpUtils();
         otpUtils.setWindowSize(5);
@@ -73,7 +74,7 @@ public class WebController {
             secretKey = user.getSecret();
         }
 
-        return otpUtils.check_code(secretKey, code, t) ? "<h1>Success</h1>" : "<h1>Failed</h1>";
+        return ResponseEntity.ok(otpUtils.check_code(secretKey, code, t) ? "<h1>Success</h1>" : "<h1>Failed</h1>");
     }
 
     private String getSecretKey() {
