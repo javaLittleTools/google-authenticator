@@ -10,7 +10,7 @@
     </parent>
     <groupId>cn.sxl</groupId>
     <artifactId>google-auth</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
     <packaging>jar</packaging>
     <name>google-auth</name>
     <description>Demo project for Spring Boot</description>

@@ -42,16 +42,4 @@ public class TotpController {
 
         return map;
     }
-
-    @PostMapping("/user")
-    public void addUser(@RequestBody User user) {
-        User existUser = userService.getUserByEmail(user.getEmail());
-
-        if (existUser != null) {
-            existUser.setSecret(user.getSecret());
-            userService.modifyUser(existUser);
-        } else {
-            userService.addUser(user);
-        }
-    }
 }

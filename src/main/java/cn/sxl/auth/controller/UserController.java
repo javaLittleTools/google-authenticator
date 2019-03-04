@@ -3,9 +3,7 @@ package cn.sxl.auth.controller;
 import cn.sxl.auth.entity.User;
 import cn.sxl.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author SxL
@@ -31,5 +29,17 @@ public class UserController {
     @GetMapping("/user/secret/{email}")
     public String getUserSecretByEmail(@PathVariable("email") String email) {
         return userService.getSecretByEmail(email);
+    }
+
+    @PostMapping("/user")
+    public void addUser(@RequestBody User user) {
+        User existUser = userService.getUserByEmail(user.getEmail());
+
+        if (existUser != null) {
+            existUser.setSecret(user.getSecret());
+            userService.modifyUser(existUser);
+        } else {
+            userService.addUser(user);
+        }
     }
 }
